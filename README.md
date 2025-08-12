@@ -1,5 +1,8 @@
 # AviTost - Монорепозиторий
 
+[![GitHub](https://img.shields.io/badge/GitHub-zhukovvlad%2Favitost-blue?logo=github)](https://github.com/zhukovvlad/avitost)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
 Проект включает в себя:
 
 - 🚀 **Backend** (FastAPI) - API сервер для OAuth авторизации через Yandex
@@ -11,7 +14,7 @@
 ### 1. Клонирование и настройка
 
 ```bash
-git clone <your-repo>
+git clone https://github.com/zhukovvlad/avitost.git
 cd avitost
 ```
 
