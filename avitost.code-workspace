@@ -1,0 +1,106 @@
+{
+  "folders": [
+    { "name": "🚀 Backend", "path": "apps/backend" },
+    { "name": "⚛️ Frontend", "path": "apps/frontend" },
+    { "name": "🤖 TG Bot", "path": "apps/tg-bot" },
+    { "name": "📁 Root", "path": "." }
+  ],
+  "settings": {
+    "files.exclude": {
+      "apps": true, // скрываем дубль подпапки в корне
+      "**/.venv": true,
+      "**/node_modules": true,
+      "**/dist": true,
+      "**/__pycache__": true
+    },
+    "python.terminal.activateEnvironment": true,
+    "python.analysis.autoImportCompletions": true,
+    "python.defaultInterpreterPath": "./apps/backend/.venv/bin/python",
+    "typescript.preferences.includePackageJsonAutoImports": "auto",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "🚀 Start All Services",
+        "type": "shell",
+        "command": "make dev",
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "new"
+        }
+      },
+      {
+        "label": "🔥 Backend Dev",
+        "type": "shell",
+        "command": "make backend-dev",
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "new"
+        }
+      },
+      {
+        "label": "⚛️ Frontend Dev",
+        "type": "shell",
+        "command": "make frontend-dev",
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "new"
+        }
+      },
+      {
+        "label": "🤖 Bot Dev",
+        "type": "shell",
+        "command": "make bot-dev",
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "new"
+        }
+      },
+      {
+        "label": "🛑 Stop All Services",
+        "type": "shell",
+        "command": "make stop",
+        "group": "build"
+      }
+    ]
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "🚀 Debug Backend",
+        "type": "debugpy",
+        "request": "launch",
+        "program": "${workspaceFolder}/apps/backend/.venv/bin/uvicorn",
+        "args": ["app.main:app", "--reload", "--port", "8000"],
+        "cwd": "${workspaceFolder}/apps/backend",
+        "console": "integratedTerminal"
+      },
+      {
+        "name": "🤖 Debug Bot",
+        "type": "debugpy",
+        "request": "launch",
+        "program": "${workspaceFolder}/apps/tg-bot/app/main.py",
+        "cwd": "${workspaceFolder}/apps/tg-bot",
+        "console": "integratedTerminal"
+      }
+    ]
+  }
+}
