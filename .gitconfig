@@ -1,0 +1,69 @@
+# Git конфигурация для AviTost
+
+[core]
+    autocrlf = input
+    ignorecase = false
+    editor = code --wait
+
+[init]
+    defaultBranch = main
+
+[pull]
+    rebase = false
+
+[push]
+    default = simple
+
+[branch]
+    autosetupmerge = always
+    autosetuprebase = always
+
+[merge]
+    tool = vscode
+
+[mergetool "vscode"]
+    cmd = code --wait $MERGED
+
+[diff]
+    tool = vscode
+
+[difftool "vscode"]
+    cmd = code --wait --diff $LOCAL $REMOTE
+
+[alias]
+    # Короткие алиасы
+    co = checkout
+    br = branch
+    ci = commit
+    st = status
+    
+    # Полезные алиасы
+    unstage = reset HEAD --
+    last = log -1 HEAD
+    visual = !gitk
+    
+    # Логи
+    lg = log --oneline --graph --all --decorate
+    lol = log --graph --decorate --pretty=oneline --abbrev-commit
+    lola = log --graph --decorate --pretty=oneline --abbrev-commit --all
+    
+    # Статус
+    s = status -s
+    
+    # Ветки
+    branches = branch -a
+    remotes = remote -v
+    
+    # Последние изменения
+    changes = log --pretty=format:\"%h %cr %cn %Cgreen%s%Creset\" --name-status
+    short = log --pretty=format:\"%h %cr %cn %Cgreen%s%Creset\"
+    changelog = log --pretty=format:\" * %s\"
+    
+    # Отмена изменений
+    undo = reset --soft HEAD^
+    amend = commit --amend
+    
+    # Работа с файлами
+    assume = update-index --assume-unchanged
+    unassume = update-index --no-assume-unchanged
+    assumed = "!git ls-files -v | grep ^h | cut -c 3-"
