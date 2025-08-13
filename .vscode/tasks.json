@@ -1,0 +1,26 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "backend:dev",
+      "type": "shell",
+      "options": { "cwd": "${workspaceFolder:apps/backend}" },
+      "command": ". .venv/bin/activate && uvicorn app.main:app --reload --port 8000",
+      "problemMatcher": []
+    },
+    {
+      "label": "bot:dev",
+      "type": "shell",
+      "options": { "cwd": "${workspaceFolder:apps/tg-bot}" },
+      "command": ". .venv/bin/activate && python app/main.py",
+      "problemMatcher": []
+    },
+    {
+      "label": "frontend:dev",
+      "type": "shell",
+      "options": { "cwd": "${workspaceFolder:apps/frontend}" },
+      "command": "pnpm dev",
+      "problemMatcher": []
+    }
+  ]
+}
