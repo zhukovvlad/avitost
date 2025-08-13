@@ -17,7 +17,7 @@
 
 ## 🚀 Быстрый старт
 
-### Вариант 1: Docker Compose (Рекомендуется)
+### Вариант 1: Full Docker (Production-like)
 
 ```bash
 git clone https://github.com/zhukovvlad/avitost.git
@@ -27,12 +27,9 @@ cd avitost
 cp .env.example .env
 nano .env  # Заполните токены
 
-# Запуск всех сервисов через Docker
+# Запуск ВСЕХ сервисов в Docker
 cd infra/compose
 docker-compose up -d
-
-# ИЛИ из корневой папки проекта:
-# docker-compose -f infra/compose/docker-compose.yml up -d
 
 # Проверка статуса
 docker-compose ps
@@ -46,7 +43,7 @@ docker-compose ps
 - **Redis**: localhost:6379
 - **MinIO**: http://localhost:9000 (Console: 9001)
 
-### Вариант 2: Локальная разработка
+### Вариант 2: Hybrid Development ⭐ **Рекомендуется для разработки**
 
 ```bash
 git clone https://github.com/zhukovvlad/avitost.git
@@ -56,10 +53,34 @@ cd avitost
 cp .env.example .env
 nano .env  # Заполните токены
 
-# Установка зависимостей
-make install
+# 1. Запуск инфраструктуры в Docker
+cd infra/compose
+docker-compose up -d postgres redis minio
 
-# Запуск всех сервисов
+# 2. Запуск приложений локально (из корня проекта)
+cd ../../
+make install  # Установка зависимостей
+make dev      # Запуск с hot reload
+```
+
+Сервисы будут доступны:
+
+- **FastAPI Backend**: http://localhost:8000 (локально)
+- **Go Backend**: http://localhost:8001 (локально, другой порт!)
+- **PostgreSQL**: localhost:5432 (Docker)
+- **Redis**: localhost:6379 (Docker)
+- **MinIO**: http://localhost:9000 (Docker)
+
+### Вариант 3: Полностью локально
+
+```bash
+git clone https://github.com/zhukovvlad/avitost.git
+cd avitost
+
+# Требует установленных PostgreSQL и Redis локально
+cp .env.example .env
+nano .env  # Заполните токены
+make install
 make dev
 ```
 
@@ -100,26 +121,21 @@ make dev
 ### Docker команды:
 
 ```bash
-# Перейти в директорию с docker-compose
+# Full Docker (все сервисы в контейнерах)
 cd infra/compose
+docker-compose up -d          # Запуск всех сервисов
+docker-compose ps             # Просмотр статуса
+docker-compose logs [service] # Просмотр логов
+docker-compose down           # Остановка всех сервисов
 
-# Запуск всех сервисов
-docker-compose up -d
+# Hybrid (только инфраструктура в Docker)
+cd infra/compose
+docker-compose up -d postgres redis minio  # Только БД + кеш + storage
+cd ../../
+make dev                      # Приложения локально
 
-# Просмотр статуса
-docker-compose ps
-
-# Просмотр логов
-docker-compose logs [service-name]
-
-# Остановка всех сервисов
-docker-compose down
-
-# Пересборка и запуск
-docker-compose build && docker-compose up -d
-
-# ИЛИ из корневой папки (указывая путь):
-# docker-compose -f infra/compose/docker-compose.yml up -d
+# Пересборка контейнера после изменений
+docker-compose build fastapi && docker-compose up -d fastapi
 ```
 
 ### Make команды (локальная разработка):
@@ -127,13 +143,23 @@ docker-compose build && docker-compose up -d
 ```bash
 make help              # Показать все доступные команды
 make install           # Установить все зависимости
-make dev              # Запустить все сервисы
+make dev              # Запустить все сервисы локально
 make backend-dev      # Запустить Python backend
 make backend-go-dev   # Запустить Go backend
 make frontend-dev     # Запустить frontend
 make bot-dev          # Запустить telegram bot
 make stop             # Остановить все сервисы
 make clean            # Очистить кеши
+```
+
+### Быстрые команды для разработки:
+
+```bash
+# Hybrid режим одной командой (рекомендуется)
+cd infra/compose && docker-compose up -d postgres redis minio && cd ../../ && make dev
+
+# Остановить все
+cd infra/compose && docker-compose down
 ```
 
 ## 📁 Структура проекта

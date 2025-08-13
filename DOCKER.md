@@ -1,14 +1,88 @@
 # Docker Guide
 
+## � Getting Started
+
+### 📋 Choose Your Development Style
+
+#### �🐳 Full Docker (Production-like)
+
+**Pros**: Identical to production, isolated environment  
+**Cons**: Slower rebuilds, no hot reload
+
+```bash
+cd infra/compose
+docker-compose up -d
+```
+
+#### 🔀 Hybrid (Infrastructure in Docker + Apps Local) ⭐ **Recommended**
+
+**Pros**: Fast development, stable infrastructure, hot reload  
+**Cons**: Need local Go/Python setup
+
+```bash
+# 1. Infrastructure in Docker
+cd infra/compose
+docker-compose up -d postgres redis minio
+
+# 2. Apps locally (from project root)
+cd ../../
+make dev
+```
+
+#### 💻 Fully Local
+
+**Pros**: Fastest development  
+**Cons**: Need to install PostgreSQL, Redis locally
+
+```bash
+make dev  # Requires local PostgreSQL, Redis
+```
+
+### 🔧 Port Mapping Comparison
+
+| Mode        | FastAPI       | Go API        | PostgreSQL    | Redis         | MinIO       |
+| ----------- | ------------- | ------------- | ------------- | ------------- | ----------- |
+| Full Docker | :8000         | :8080         | :5432         | :6379         | :9000/:9001 |
+| Hybrid      | :8000 (local) | :8001 (local) | :5432         | :6379         | :9000/:9001 |
+| Local       | :8000         | :8001         | :5432 (local) | :6379 (local) | N/A         |
+
+⚠️ **Important**: В Docker Go API слушает порт 8080, локально - 8001!
+
 ## 🐳 Quick Start
+
+### Option 1: Full Docker (Production-like)
 
 ```bash
 # Navigate to compose directory
 cd infra/compose
+
+# Start all services in Docker
 docker-compose up -d
 
-# OR from project root
-docker-compose -f infra/compose/docker-compose.yml up -d
+# Check services status
+docker-compose ps
+
+# Access applications:
+# - FastAPI: http://localhost:8000
+# - Go API: http://localhost:8080
+# - MinIO Console: http://localhost:9001
+```
+
+### Option 2: Hybrid Development ⭐ **Recommended**
+
+```bash
+# Start only infrastructure services
+cd infra/compose
+docker-compose up -d postgres redis minio
+
+# Return to project root and start apps locally
+cd ../../
+make dev
+
+# Access applications:
+# - FastAPI: http://localhost:8000 (local)
+# - Go API: http://localhost:8001 (local)
+# - MinIO Console: http://localhost:9001
 ```
 
 ⚠️ **Важно**: Docker Compose файл находится в `infra/compose/docker-compose.yml`, поэтому команды нужно запускать либо из этой директории, либо указывать полный путь к файлу.
@@ -47,15 +121,45 @@ docker-compose down
 docker-compose restart [service-name]
 ```
 
-### Commands from Project Root
+## 🔄 Development Workflow
+
+### For Full Docker Development (Option 1)
 
 ```bash
-# All commands from project root with -f flag
-docker-compose -f infra/compose/docker-compose.yml up -d
-docker-compose -f infra/compose/docker-compose.yml ps
-docker-compose -f infra/compose/docker-compose.yml logs [service-name]
-docker-compose -f infra/compose/docker-compose.yml down
-docker-compose -f infra/compose/docker-compose.yml restart [service-name]
+cd infra/compose
+
+# Make code changes, then rebuild specific service
+docker-compose build fastapi  # or goapi
+docker-compose up -d fastapi
+
+# View logs
+docker-compose logs -f fastapi
+```
+
+### For Hybrid Development (Option 2) ⭐ **Recommended**
+
+```bash
+# Infrastructure runs in Docker (stable)
+cd infra/compose
+docker-compose up -d postgres redis minio
+
+# Applications run locally (fast reload)
+cd ../../
+make dev  # Auto-reload on code changes
+
+# When done developing:
+cd infra/compose
+docker-compose down  # Stop infrastructure
+```
+
+### Quick Commands
+
+```bash
+# Start hybrid development (one command)
+cd infra/compose && docker-compose up -d postgres redis minio && cd ../../ && make dev
+
+# Stop everything
+cd infra/compose && docker-compose down
 ```
 
 ### Development Workflow
