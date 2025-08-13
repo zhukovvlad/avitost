@@ -7,43 +7,60 @@
 
 ## 🏗 Архитектура
 
-- � **Python Backend** (FastAPI) - OAuth авторизация через Yandex
+- 🔥 **Python Backend** (FastAPI) - OAuth авторизация через Yandex
 - 🏃 **Go Backend** (Gin) - Avito API, система биллинга, высокая производительность
 - ⚛️ **Frontend** (React + Vite) - Современный пользовательский интерфейс
 - 🤖 **Telegram Bot** (aiogram) - Бот для загрузки фото в Яндекс.Диск
-- 🗄️ **PostgreSQL** - Основная база данных
+- 🗄️ **PostgreSQL 16** - Основная база данных
+- 🔄 **Redis 7** - Кеширование и сессии
+- 📦 **MinIO** - S3-совместимое объектное хранилище
 
 ## 🚀 Быстрый старт
 
-### 1. Клонирование и настройка
+### Вариант 1: Docker Compose (Рекомендуется)
 
 ```bash
 git clone https://github.com/zhukovvlad/avitost.git
 cd avitost
-```
 
-### 2. Настройка переменных окружения
-
-Скопируйте `.env.example` в `.env` и заполните необходимые токены:
-
-```bash
+# Настройка переменных окружения
 cp .env.example .env
 nano .env  # Заполните токены
+
+# Запуск всех сервисов через Docker
+cd infra/compose
+docker-compose up -d
+
+# Проверка статуса
+docker-compose ps
 ```
 
-### 3. Установка зависимостей
+Сервисы будут доступны:
+
+- **FastAPI Backend**: http://localhost:8000
+- **Go Backend**: http://localhost:8080
+- **PostgreSQL**: localhost:5432
+- **Redis**: localhost:6379
+- **MinIO**: http://localhost:9000 (Console: 9001)
+
+### Вариант 2: Локальная разработка
 
 ```bash
+git clone https://github.com/zhukovvlad/avitost.git
+cd avitost
+
+# Настройка переменных окружения
+cp .env.example .env
+nano .env  # Заполните токены
+
+# Установка зависимостей
 make install
-```
 
-### 4. Запуск всех сервисов
-
-```bash
+# Запуск всех сервисов
 make dev
 ```
 
-Сервисы будут доступны по адресам:
+Сервисы будут доступны:
 
 - **Python Backend**: http://localhost:8000
 - **Go Backend**: http://localhost:8001
@@ -52,22 +69,53 @@ make dev
 
 ## 🌐 API Endpoints
 
-### Python Backend (8000):
+### FastAPI Backend (8000 / 8000 в Docker):
 
-- `GET /api/health` - Health check
-- `GET /api/login` - OAuth Yandex
+- `GET /` - Главная страница
+- `GET /api/login` - OAuth Yandex авторизация
 - `GET /docs` - Swagger документация
+- `GET /redoc` - ReDoc документация
 
-### Go Backend (8001):
+### Go Backend (8001 локально / 8080 в Docker):
 
 - `GET /health` - Health check
+- `GET /api/health` - Альтернативный health check
 - `GET /api/v1/status` - Статус сервисов
 - `GET /api/v1/avito/categories` - Категории Avito
 - `GET /api/v1/avito/search?query=...` - Поиск объявлений
 - `GET /api/v1/billing/users/:id/balance` - Баланс пользователя
 - `POST /api/v1/billing/users/:id/payments` - Создать платеж
 
+### Инфраструктурные сервисы:
+
+- **PostgreSQL**: localhost:5432 (app:app)
+- **Redis**: localhost:6379
+- **MinIO**: http://localhost:9000 (minio:minio123)
+
 ## 🛠 Доступные команды
+
+### Docker команды:
+
+```bash
+cd infra/compose
+
+# Запуск всех сервисов
+docker-compose up -d
+
+# Просмотр статуса
+docker-compose ps
+
+# Просмотр логов
+docker-compose logs [service-name]
+
+# Остановка всех сервисов
+docker-compose down
+
+# Пересборка и запуск
+docker-compose build && docker-compose up -d
+```
+
+### Make команды (локальная разработка):
 
 ```bash
 make help              # Показать все доступные команды
@@ -90,15 +138,17 @@ avitost/
 │   │   ├── app/
 │   │   │   └── main.py   # OAuth, интеграции
 │   │   ├── requirements.txt
+│   │   ├── Dockerfile    # Docker конфигурация
 │   │   └── .venv/        # Виртуальное окружение
 │   ├── backend-go/       # Gin приложение (Go)
+│   │   ├── cmd/api/      # Точка входа
 │   │   ├── internal/     # Бизнес-логика
 │   │   │   ├── avito/    # Avito API клиент
 │   │   │   ├── billing/  # Система биллинга
 │   │   │   ├── config/   # Конфигурация
 │   │   │   └── http/     # HTTP обработчики
 │   │   ├── go.mod
-│   │   └── main.go       # Точка входа
+│   │   └── Dockerfile    # Docker конфигурация
 │   ├── frontend/         # React приложение
 │   │   ├── src/
 │   │   ├── package.json
@@ -108,7 +158,9 @@ avitost/
 │       │   └── main.py  # Основной файл бота
 │       ├── requirements.txt
 │       └── .venv/       # Виртуальное окружение
-├── infra/               # Docker, Caddy конфиги
+├── infra/               # Docker и инфраструктура
+│   └── compose/
+│       └── docker-compose.yml  # Полный стек сервисов
 ├── packages/            # Общие пакеты/схемы
 ├── .env                 # Переменные окружения
 ├── .env.example         # Пример переменных
@@ -155,15 +207,32 @@ python app/main.py
 Создайте файл `.env` в корне проекта:
 
 ```bash
-# Python Backend
+# Backend (Python)
 YANDEX_CLIENT_ID=ваш_yandex_client_id
 YANDEX_CLIENT_SECRET=ваш_yandex_client_secret
 OAUTH_REDIRECT_URI=http://localhost:8000/oauth/callback
 OAUTH_SCOPE=login:info
 
-# Go Backend
-AVITO_API_URL=https://api.avito.ru
-DATABASE_URL=postgres://user:password@localhost:5432/avitost
+# Backend (Go)
+GO_PORT=8001
+GO_HOST=localhost
+GIN_MODE=debug
+AVITO_API_KEY=ваш_avito_api_key
+AVITO_BASE_URL=https://api.avito.ru
+AVITO_USER_AGENT=AviTost/1.0
+
+# Database
+POSTGRES_DB=app
+POSTGRES_USER=app
+POSTGRES_PASSWORD=app
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=avitost
+DB_SSLMODE=disable
+
+# MinIO
+MINIO_ROOT_USER=minio
+MINIO_ROOT_PASSWORD=minio123
 
 # Telegram Bot
 TG_BOT_TOKEN=ваш_telegram_bot_token
@@ -171,7 +240,6 @@ YANDEX_TOKEN=ваш_yandex_oauth_token
 
 # Frontend
 VITE_API_BASE=http://localhost:8000/api
-VITE_GO_API_BASE=http://localhost:8001/api/v1
 ```
 
 ## 🚨 Troubleshooting
@@ -207,11 +275,42 @@ make stop  # Остановить все сервисы
 ### Тестирование API
 
 ```bash
+# Docker версия (рекомендуется)
+# FastAPI backend
+curl http://localhost:8000/
+curl http://localhost:8000/docs
+
+# Go backend
+curl http://localhost:8080/health
+curl http://localhost:8080/api/v1/status
+
+# Локальная версия
 # Python backend
-curl http://localhost:8000/api/health
+curl http://localhost:8000/
 
 # Go backend
 curl http://localhost:8001/health
 curl http://localhost:8001/api/v1/avito/categories
 curl "http://localhost:8001/api/v1/avito/search?query=iPhone"
 ```
+
+## 🐳 Docker
+
+Проект включает полную Docker конфигурацию:
+
+- **PostgreSQL 16** - Современная версия БД
+- **Redis 7-alpine** - Кеширование
+- **MinIO** - S3-совместимое хранилище
+- **FastAPI** - Python backend
+- **Go API** - Go backend (версия 1.23)
+
+Все сервисы имеют healthchecks и правильные зависимости запуска.
+
+### Производственный деплой
+
+```bash
+cd infra/compose
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+```
+
+📖 **Подробная документация по Docker**: [DOCKER.md](DOCKER.md)

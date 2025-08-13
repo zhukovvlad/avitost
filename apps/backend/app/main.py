@@ -77,3 +77,9 @@ async def callback(req: Request):
         )
     r.raise_for_status()
     return JSONResponse(r.json())
+
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for Docker healthcheck"""
+    return {"status": "healthy", "service": "fastapi"}
