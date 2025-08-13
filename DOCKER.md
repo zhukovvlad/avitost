@@ -3,9 +3,15 @@
 ## 🐳 Quick Start
 
 ```bash
+# Navigate to compose directory
 cd infra/compose
 docker-compose up -d
+
+# OR from project root
+docker-compose -f infra/compose/docker-compose.yml up -d
 ```
+
+⚠️ **Важно**: Docker Compose файл находится в `infra/compose/docker-compose.yml`, поэтому команды нужно запускать либо из этой директории, либо указывать полный путь к файлу.
 
 ## 📋 Services Overview
 
@@ -19,9 +25,12 @@ docker-compose up -d
 
 ## 🔧 Docker Commands
 
-### Basic Operations
+### Basic Operations (from infra/compose directory)
 
 ```bash
+# Navigate to compose directory first
+cd infra/compose
+
 # Start all services
 docker-compose up -d
 
@@ -38,9 +47,23 @@ docker-compose down
 docker-compose restart [service-name]
 ```
 
+### Commands from Project Root
+
+```bash
+# All commands from project root with -f flag
+docker-compose -f infra/compose/docker-compose.yml up -d
+docker-compose -f infra/compose/docker-compose.yml ps
+docker-compose -f infra/compose/docker-compose.yml logs [service-name]
+docker-compose -f infra/compose/docker-compose.yml down
+docker-compose -f infra/compose/docker-compose.yml restart [service-name]
+```
+
 ### Development Workflow
 
 ```bash
+# Navigate to compose directory first
+cd infra/compose
+
 # Rebuild and restart after code changes
 docker-compose build [service-name]
 docker-compose up -d [service-name]
@@ -50,11 +73,18 @@ docker-compose build --no-cache [service-name]
 
 # View real-time logs
 docker-compose logs -f [service-name]
+
+# OR from project root:
+docker-compose -f infra/compose/docker-compose.yml build [service-name]
+docker-compose -f infra/compose/docker-compose.yml up -d [service-name]
 ```
 
 ### Debugging
 
 ```bash
+# Navigate to compose directory first
+cd infra/compose
+
 # Execute commands in running container
 docker-compose exec fastapi /bin/bash
 docker-compose exec goapi /bin/sh
@@ -62,6 +92,9 @@ docker-compose exec postgres psql -U app
 
 # Check container health
 docker inspect avitost_fastapi --format='{{.State.Health.Status}}'
+
+# OR from project root:
+docker-compose -f infra/compose/docker-compose.yml exec fastapi /bin/bash
 ```
 
 ## 🏗 Architecture
@@ -117,7 +150,8 @@ docker inspect avitost_fastapi --format='{{.State.Health.Status}}'
 All services include health checks:
 
 ```bash
-# Check all service health
+# From infra/compose directory
+cd infra/compose
 docker-compose ps
 
 # Individual health checks
@@ -126,6 +160,10 @@ curl http://localhost:8080/health  # Go API
 docker-compose exec postgres pg_isready -U app
 docker-compose exec redis redis-cli ping
 curl http://localhost:9000/minio/health/live  # MinIO
+
+# OR from project root:
+docker-compose -f infra/compose/docker-compose.yml ps
+docker-compose -f infra/compose/docker-compose.yml exec postgres pg_isready -U app
 ```
 
 ## 🚀 Production Deployment
@@ -150,8 +188,14 @@ GIN_MODE=release
 ### Production Compose
 
 ```bash
+# Navigate to compose directory
+cd infra/compose
+
 # Use production override
 docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+# OR from project root:
+docker-compose -f infra/compose/docker-compose.yml -f infra/compose/docker-compose.prod.yml up -d
 ```
 
 ### Resource Limits
@@ -178,14 +222,19 @@ services:
 # Find process using port
 sudo lsof -i :8000
 
-# Stop all compose services
+# Stop all compose services (from infra/compose)
+cd infra/compose
 docker-compose down
+
+# OR from project root
+docker-compose -f infra/compose/docker-compose.yml down
 ```
 
 **Container Won't Start**
 
 ```bash
-# Check logs
+# Check logs (from infra/compose)
+cd infra/compose
 docker-compose logs [service-name]
 
 # Check health status
@@ -193,16 +242,23 @@ docker-compose ps
 
 # Rebuild container
 docker-compose build --no-cache [service-name]
+
+# OR from project root:
+docker-compose -f infra/compose/docker-compose.yml logs [service-name]
 ```
 
 **Database Connection Issues**
 
 ```bash
-# Check postgres is ready
+# Check postgres is ready (from infra/compose)
+cd infra/compose
 docker-compose exec postgres pg_isready -U app
 
 # Connect to database
 docker-compose exec postgres psql -U app -d app
+
+# OR from project root:
+docker-compose -f infra/compose/docker-compose.yml exec postgres pg_isready -U app
 ```
 
 **Permission Denied**
@@ -241,13 +297,17 @@ docker stats avitost_postgres
 ### Log Locations
 
 ```bash
-# Application logs
+# Application logs (from infra/compose)
+cd infra/compose
 docker-compose logs fastapi
 docker-compose logs goapi
 
 # System logs
 docker-compose logs postgres
 docker-compose logs redis
+
+# OR from project root:
+docker-compose -f infra/compose/docker-compose.yml logs fastapi
 ```
 
 ### Log Rotation

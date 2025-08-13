@@ -31,6 +31,9 @@ nano .env  # Заполните токены
 cd infra/compose
 docker-compose up -d
 
+# ИЛИ из корневой папки проекта:
+# docker-compose -f infra/compose/docker-compose.yml up -d
+
 # Проверка статуса
 docker-compose ps
 ```
@@ -97,6 +100,7 @@ make dev
 ### Docker команды:
 
 ```bash
+# Перейти в директорию с docker-compose
 cd infra/compose
 
 # Запуск всех сервисов
@@ -113,6 +117,9 @@ docker-compose down
 
 # Пересборка и запуск
 docker-compose build && docker-compose up -d
+
+# ИЛИ из корневой папки (указывая путь):
+# docker-compose -f infra/compose/docker-compose.yml up -d
 ```
 
 ### Make команды (локальная разработка):
