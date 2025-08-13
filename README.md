@@ -3,11 +3,15 @@
 [![GitHub](https://img.shields.io/badge/GitHub-zhukovvlad%2Favitost-blue?logo=github)](https://github.com/zhukovvlad/avitost)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-Проект включает в себя:
+Полнофункциональная микросервисная платформа для работы с объявлениями и биллингом.
 
-- 🚀 **Backend** (FastAPI) - API сервер для OAuth авторизации через Yandex
-- ⚛️ **Frontend** (React + Vite) - Пользовательский интерфейс
+## 🏗 Архитектура
+
+- � **Python Backend** (FastAPI) - OAuth авторизация через Yandex
+- 🏃 **Go Backend** (Gin) - Avito API, система биллинга, высокая производительность
+- ⚛️ **Frontend** (React + Vite) - Современный пользовательский интерфейс
 - 🤖 **Telegram Bot** (aiogram) - Бот для загрузки фото в Яндекс.Диск
+- 🗄️ **PostgreSQL** - Основная база данных
 
 ## 🚀 Быстрый старт
 
@@ -41,21 +45,40 @@ make dev
 
 Сервисы будут доступны по адресам:
 
-- **Backend API**: http://localhost:8000
+- **Python Backend**: http://localhost:8000
+- **Go Backend**: http://localhost:8001
 - **Frontend**: http://localhost:5173
 - **API Docs**: http://localhost:8000/docs
+
+## 🌐 API Endpoints
+
+### Python Backend (8000):
+
+- `GET /api/health` - Health check
+- `GET /api/login` - OAuth Yandex
+- `GET /docs` - Swagger документация
+
+### Go Backend (8001):
+
+- `GET /health` - Health check
+- `GET /api/v1/status` - Статус сервисов
+- `GET /api/v1/avito/categories` - Категории Avito
+- `GET /api/v1/avito/search?query=...` - Поиск объявлений
+- `GET /api/v1/billing/users/:id/balance` - Баланс пользователя
+- `POST /api/v1/billing/users/:id/payments` - Создать платеж
 
 ## 🛠 Доступные команды
 
 ```bash
-make help          # Показать все доступные команды
-make install        # Установить зависимости
-make dev           # Запустить все сервисы
-make backend-dev   # Запустить только backend
-make frontend-dev  # Запустить только frontend
-make bot-dev       # Запустить только telegram bot
-make stop          # Остановить все сервисы
-make clean         # Очистить кеши
+make help              # Показать все доступные команды
+make install           # Установить все зависимости
+make dev              # Запустить все сервисы
+make backend-dev      # Запустить Python backend
+make backend-go-dev   # Запустить Go backend
+make frontend-dev     # Запустить frontend
+make bot-dev          # Запустить telegram bot
+make stop             # Остановить все сервисы
+make clean            # Очистить кеши
 ```
 
 ## 📁 Структура проекта
@@ -63,11 +86,19 @@ make clean         # Очистить кеши
 ```
 avitost/
 ├── apps/
-│   ├── backend/           # FastAPI приложение
+│   ├── backend/           # FastAPI приложение (Python)
 │   │   ├── app/
-│   │   │   └── main.py   # Основной файл API
+│   │   │   └── main.py   # OAuth, интеграции
 │   │   ├── requirements.txt
 │   │   └── .venv/        # Виртуальное окружение
+│   ├── backend-go/       # Gin приложение (Go)
+│   │   ├── internal/     # Бизнес-логика
+│   │   │   ├── avito/    # Avito API клиент
+│   │   │   ├── billing/  # Система биллинга
+│   │   │   ├── config/   # Конфигурация
+│   │   │   └── http/     # HTTP обработчики
+│   │   ├── go.mod
+│   │   └── main.go       # Точка входа
 │   ├── frontend/         # React приложение
 │   │   ├── src/
 │   │   ├── package.json
@@ -87,12 +118,21 @@ avitost/
 
 ## 🔧 Разработка
 
-### Backend
+### Python Backend
 
 ```bash
 cd apps/backend
 source .venv/bin/activate
 uvicorn app.main:app --reload --port 8000
+```
+
+### Go Backend
+
+```bash
+cd apps/backend-go
+go run main.go
+# или в daemon режиме:
+make backend-go-daemon
 ```
 
 ### Frontend
@@ -115,11 +155,15 @@ python app/main.py
 Создайте файл `.env` в корне проекта:
 
 ```bash
-# Backend
+# Python Backend
 YANDEX_CLIENT_ID=ваш_yandex_client_id
 YANDEX_CLIENT_SECRET=ваш_yandex_client_secret
 OAUTH_REDIRECT_URI=http://localhost:8000/oauth/callback
 OAUTH_SCOPE=login:info
+
+# Go Backend
+AVITO_API_URL=https://api.avito.ru
+DATABASE_URL=postgres://user:password@localhost:5432/avitost
 
 # Telegram Bot
 TG_BOT_TOKEN=ваш_telegram_bot_token
@@ -127,6 +171,7 @@ YANDEX_TOKEN=ваш_yandex_oauth_token
 
 # Frontend
 VITE_API_BASE=http://localhost:8000/api
+VITE_GO_API_BASE=http://localhost:8001/api/v1
 ```
 
 ## 🚨 Troubleshooting
@@ -153,7 +198,20 @@ make stop  # Остановить все сервисы
 
 ## 📚 API Documentation
 
-После запуска backend'а, документация доступна по адресу:
+После запуска сервисов, документация доступна по адресам:
 
-- Swagger UI: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
+- **Python Backend Swagger**: http://localhost:8000/docs
+- **Python Backend ReDoc**: http://localhost:8000/redoc
+- **Go Backend Health**: http://localhost:8001/health
+
+### Тестирование API
+
+```bash
+# Python backend
+curl http://localhost:8000/api/health
+
+# Go backend
+curl http://localhost:8001/health
+curl http://localhost:8001/api/v1/avito/categories
+curl "http://localhost:8001/api/v1/avito/search?query=iPhone"
+```

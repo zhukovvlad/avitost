@@ -1,69 +1,131 @@
-# React + TypeScript + Vite
+# Frontend для AviTost
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 🚀 Описание
 
-Currently, two official plugins are available:
+React frontend приложение с современным стеком технологий:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **React 18** - UI библиотека
+- **TypeScript** - Типизированный JavaScript
+- **Vite** - Сборщик и dev сервер
+- **Tailwind CSS** - Utility-first CSS фреймворк
+- **Shadcn/ui** - Компоненты UI
 
-## Expanding the ESLint configuration
+## 🏗 Архитектура
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+apps/frontend/
+├── src/
+│   ├── components/      # React компоненты
+│   │   └── ui/         # Переиспользуемые UI компоненты
+│   ├── lib/            # Утилиты и хелперы
+│   ├── assets/         # Статические файлы
+│   ├── App.tsx         # Основной компонент
+│   ├── main.tsx        # Точка входа
+│   └── index.css       # Стили
+├── public/             # Публичные файлы
+├── package.json        # Node.js зависимости
+└── vite.config.ts      # Конфигурация Vite
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🛠 Установка и запуск
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Требования
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- Node.js 18+
+- pnpm (или npm/yarn)
+
+### Быстрый старт
+
+```bash
+# Установка зависимостей
+cd apps/frontend
+pnpm install
+
+# Запуск dev сервера
+pnpm dev
+
+# Или из корня проекта
+make frontend-dev
 ```
+
+Приложение будет доступно на `http://localhost:5173`
+
+## 🌐 Переменные окружения
+
+Создайте файл `.env.local`:
+
+```bash
+# API endpoints
+VITE_API_BASE=http://localhost:8000/api
+VITE_GO_API_BASE=http://localhost:8001/api/v1
+
+# Режим разработки
+VITE_NODE_ENV=development
+```
+
+## 🔧 Разработка
+
+### Структура компонентов
+
+```
+src/components/
+├── ui/                 # Базовые UI компоненты (Button, Input, etc.)
+└── feature/           # Компоненты фич (планируется)
+```
+
+### Добавление нового компонента
+
+```bash
+# Используя shadcn/ui CLI
+npx shadcn-ui@latest add [component-name]
+```
+
+### Стилизация
+
+Проект использует Tailwind CSS. Основные классы:
+
+- `bg-primary` - основной цвет фона
+- `text-primary` - основной цвет текста
+- `border-primary` - основной цвет границ
+
+## 📦 Сборка
+
+```bash
+# Production сборка
+pnpm build
+
+# Предпросмотр сборки
+pnpm preview
+```
+
+## 🧪 Тестирование
+
+```bash
+# Линтер
+pnpm lint
+
+# Проверка типов
+pnpm type-check
+```
+
+## 🔗 Интеграция с Backend
+
+Frontend интегрируется с двумя backend сервисами:
+
+### Python Backend (8000)
+
+- OAuth авторизация
+- Пользовательские данные
+
+### Go Backend (8001)
+
+- Avito API
+- Система биллинга
+- Высокопроизводительные операции
+
+## 📚 Полезные ссылки
+
+- [React Documentation](https://react.dev/)
+- [Vite Documentation](https://vitejs.dev/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Shadcn/ui](https://ui.shadcn.com/)

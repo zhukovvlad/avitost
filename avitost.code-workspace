@@ -1,6 +1,7 @@
 {
   "folders": [
-    { "name": "🚀 Backend", "path": "apps/backend" },
+    { "name": "🚀 Backend (Python)", "path": "apps/backend" },
+    { "name": "🏃 Backend (Go)", "path": "apps/backend-go" },
     { "name": "⚛️ Frontend", "path": "apps/frontend" },
     { "name": "🤖 TG Bot", "path": "apps/tg-bot" },
     { "name": "📁 Root", "path": "." }
@@ -38,9 +39,21 @@
         }
       },
       {
-        "label": "🔥 Backend Dev",
+        "label": "🔥 Python Backend Dev",
         "type": "shell",
         "command": "make backend-dev",
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "new"
+        }
+      },
+      {
+        "label": "🏃 Go Backend Dev",
+        "type": "shell",
+        "command": "make backend-go-dev",
         "group": "build",
         "presentation": {
           "echo": true,
