@@ -1,0 +1,79 @@
+# AviTost Development Configuration
+localhost {
+    # Frontend - главная страница и статические файлы
+    handle /* {
+        reverse_proxy frontend:80
+    }
+    
+    # FastAPI backend - OAuth, документация
+    handle /api/auth/* {
+        reverse_proxy fastapi:8000
+    }
+    
+    handle /api/python/* {
+        reverse_proxy fastapi:8000
+    }
+    
+    handle /docs* {
+        reverse_proxy fastapi:8000
+    }
+    
+    handle /redoc* {
+        reverse_proxy fastapi:8000
+    }
+    
+    handle /openapi.json* {
+        reverse_proxy fastapi:8000
+    }
+    
+    # Go API backend - основной API
+    handle /api/go/* {
+        reverse_proxy goapi:8001
+    }
+    
+    handle /api/v1/* {
+        reverse_proxy goapi:8001
+    }
+    
+    handle /health* {
+        reverse_proxy goapi:8001
+    }
+    
+    # MinIO storage (опционально через proxy)
+    handle /storage/* {
+        uri strip_prefix /storage
+        reverse_proxy minio:9000
+    }
+    
+    # Логирование для отладки
+    log {
+        output file /var/log/caddy/access.log
+        format json
+        level INFO
+    }
+    
+    # CORS headers для API
+    header /api/* {
+        Access-Control-Allow-Origin "*"
+        Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+        Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+        Access-Control-Max-Age "86400"
+    }
+    
+    # Обработка preflight OPTIONS запросов
+    @options {
+        method OPTIONS
+    }
+    respond @options 204
+}
+
+# Production configuration (для будущего использования)
+# {$DOMAIN:avitost.com} {
+#     # Автоматический HTTPS с Let's Encrypt
+#     tls {
+#         email {$ADMIN_EMAIL}
+#     }
+#     
+#     # Тот же routing что и выше
+#     import localhost
+# }

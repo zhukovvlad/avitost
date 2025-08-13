@@ -54,7 +54,7 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
-    ports: ["8000:8000"]
+    expose: ["8000"]
     restart: unless-stopped
 
   goapi:
@@ -67,12 +67,46 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    ports: ["8080:8001"]
+    expose: ["8001"]
     restart: unless-stopped
+
+  frontend:
+    build:
+      context: ../../apps/frontend
+      dockerfile: Dockerfile
+    container_name: avitost_frontend
+    expose:
+      - "80"
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: avitost_caddy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+      - caddy_logs:/var/log/caddy
+    depends_on:
+      - fastapi
+      - goapi
+      - frontend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "caddy", "validate", "--config", "/etc/caddy/Caddyfile"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 volumes:
   pgdata:
   minio:
+  caddy_data:
+  caddy_config:
+  caddy_logs:
 
 networks:
   default:

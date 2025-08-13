@@ -17,7 +17,7 @@
 
 ## 🚀 Быстрый старт
 
-### Вариант 1: Full Docker (Production-like)
+### Вариант 1: Full Docker с Caddy ⭐ **Рекомендуется**
 
 ```bash
 git clone https://github.com/zhukovvlad/avitost.git
@@ -27,7 +27,7 @@ cd avitost
 cp .env.example .env
 nano .env  # Заполните токены
 
-# Запуск ВСЕХ сервисов в Docker
+# Запуск ВСЕХ сервисов в Docker с единой точкой входа
 cd infra/compose
 docker-compose up -d
 
@@ -35,15 +35,16 @@ docker-compose up -d
 docker-compose ps
 ```
 
-Сервисы будут доступны:
+**Единая точка входа через Caddy**: http://localhost
 
-- **FastAPI Backend**: http://localhost:8000
-- **Go Backend**: http://localhost:8080
-- **PostgreSQL**: localhost:5432
-- **Redis**: localhost:6379
-- **MinIO**: http://localhost:9000 (Console: 9001)
+- **Главная страница**: http://localhost/
+- **FastAPI Docs**: http://localhost/docs
+- **Go API**: http://localhost/api/v1/\* и http://localhost/health
+- **MinIO Console**: http://localhost:9001 (прямой доступ)
 
-### Вариант 2: Hybrid Development ⭐ **Рекомендуется для разработки**
+Все API доступны через один домен - больше никаких проблем с CORS! 🎉
+
+### Вариант 2: Hybrid Development (Infrastructure + Local Apps)
 
 ```bash
 git clone https://github.com/zhukovvlad/avitost.git
@@ -53,62 +54,64 @@ cd avitost
 cp .env.example .env
 nano .env  # Заполните токены
 
-# 1. Запуск инфраструктуры в Docker
-cd infra/compose
-docker-compose up -d postgres redis minio
+# 1. Запуск инфраструктуры в Docker (без приложений)
+make docker-infra
 
 # 2. Запуск приложений локально (из корня проекта)
-cd ../../
 make install  # Установка зависимостей
 make dev      # Запуск с hot reload
 ```
 
-Сервисы будут доступны:
+В режиме разработки:
 
-- **FastAPI Backend**: http://localhost:8000 (локально)
-- **Go Backend**: http://localhost:8001 (локально, другой порт!)
-- **PostgreSQL**: localhost:5432 (Docker)
-- **Redis**: localhost:6379 (Docker)
-- **MinIO**: http://localhost:9000 (Docker)
+- **Frontend**: http://localhost:5173
+- **FastAPI**: http://localhost:8000
+- **Go API**: http://localhost:8001
+- **PostgreSQL**: localhost:5432
+- **Redis**: localhost:6379
+- **MinIO**: http://localhost:9000
 
-### Вариант 3: Полностью локально
+### Вариант 3: Полная локальная разработка
 
 ```bash
 git clone https://github.com/zhukovvlad/avitost.git
 cd avitost
 
-# Требует установленных PostgreSQL и Redis локально
+# Настройка переменных окружения
 cp .env.example .env
 nano .env  # Заполните токены
-make install
-make dev
+
+# Установка и запуск
+make install  # Установка всех зависимостей
+make dev     # Запуск всех сервисов локально
 ```
 
-Сервисы будут доступны:
-
-- **Python Backend**: http://localhost:8000
-- **Go Backend**: http://localhost:8001
-- **Frontend**: http://localhost:5173
-- **API Docs**: http://localhost:8000/docs
+⚠️ **Требует**: PostgreSQL, Redis установленные локально
 
 ## 🌐 API Endpoints
 
-### FastAPI Backend (8000 / 8000 в Docker):
+### 🚀 Через Caddy (Production) - http://localhost
+
+- **Frontend**: `/` - React приложение
+- **FastAPI Docs**: `/docs` - Swagger документация
+- **FastAPI API**: `/api/python/*` - Python backend endpoints
+- **Go API**: `/api/v1/*` - Go backend endpoints
+- **Health Check**: `/health` - Статус Go API
+- **Storage**: `/storage/*` - MinIO объектное хранилище
+
+### 🛠 Direct Access (Development)
+
+#### FastAPI Backend (8000):
 
 - `GET /` - Главная страница
 - `GET /api/login` - OAuth Yandex авторизация
 - `GET /docs` - Swagger документация
-- `GET /redoc` - ReDoc документация
 
-### Go Backend (8001 локально / 8080 в Docker):
+#### Go Backend (8001):
 
 - `GET /health` - Health check
-- `GET /api/health` - Альтернативный health check
 - `GET /api/v1/status` - Статус сервисов
 - `GET /api/v1/avito/categories` - Категории Avito
-- `GET /api/v1/avito/search?query=...` - Поиск объявлений
-- `GET /api/v1/billing/users/:id/balance` - Баланс пользователя
-- `POST /api/v1/billing/users/:id/payments` - Создать платеж
 
 ### Инфраструктурные сервисы:
 
@@ -116,7 +119,42 @@ make dev
 - **Redis**: localhost:6379
 - **MinIO**: http://localhost:9000 (minio:minio123)
 
-## 🛠 Доступные команды
+## � Архитектурные преимущества Caddy
+
+### ✅ Решаемые проблемы:
+
+1. **CORS Issues** - Все API через один домен
+2. **SSL Termination** - Автоматические HTTPS сертификаты
+3. **Load Balancing** - Распределение нагрузки
+4. **Централизованные логи** - Единое место для мониторинга
+5. **Production-Ready** - Готовность к продакшену
+
+### 🏗 Архитектура с Caddy:
+
+```
+┌─────────────┐    ┌─────────────┐
+│   Browser   │───▶│    Caddy    │
+└─────────────┘    │ :80 / :443  │
+                   └──────┬──────┘
+                          │
+        ┌─────────────────┼─────────────────┐
+        ▼                 ▼                 ▼
+   ┌──────────┐    ┌──────────┐    ┌──────────┐
+   │ Frontend │    │ FastAPI  │    │  Go API  │
+   │   :80    │    │  :8000   │    │  :8001   │
+   └──────────┘    └──────────┘    └──────────┘
+```
+
+### 🎯 Routing Rules:
+
+- `/` → Frontend (React SPA)
+- `/api/python/*` → FastAPI Backend
+- `/api/v1/*` → Go Backend
+- `/docs` → FastAPI Swagger
+- `/health` → Go Health Check
+- `/storage/*` → MinIO Object Storage
+
+## 🛠 Команды для разработки
 
 ### Docker команды:
 
